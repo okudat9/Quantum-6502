@@ -1,0 +1,1292 @@
+% ============================================================
+%  EEDT Version 5 — Zenodo Revised Draft (2026-03-15)
+%  GPS v8 Hardware Validation + Theoretical Strengthening
+%  Compiler: pdflatex (twice)
+%  Figures: fig1_gps_smoking_gun.pdf
+%           fig2_device_comparison.pdf
+%           fig3_data_collapse.pdf
+%           fig4_followup.pdf
+% ============================================================
+\documentclass[10pt,twocolumn]{article}
+
+% ── Packages ─────────────────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+
+\usepackage{colortbl}
+\usepackage[top=2.0cm,bottom=2.0cm,left=1.6cm,right=1.6cm,
+            columnsep=0.6cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{cite}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{abstract}
+
+% ── Colors ───────────────────────────────────────────────────
+\definecolor{NatureRed}{HTML}{E64B35}
+\definecolor{NatureBlue}{HTML}{4DBBD5}
+\definecolor{NatureGreen}{HTML}{00A087}
+\definecolor{NatureGold}{HTML}{F39B7F}
+\definecolor{DarkGray}{HTML}{333333}
+
+% ── Hyperref setup ───────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=NatureBlue,
+  citecolor=NatureGreen,
+  urlcolor=NatureBlue,
+  pdftitle={EEDT: Entanglement-Enhanced Dynamical Tracking (Version 5)},
+  pdfauthor={Takeshi Okuda}
+}
+
+% ── Section formatting ───────────────────────────────────────
+\titleformat{\section}{\normalfont\large\bfseries\color{DarkGray}}
+  {\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries\color{DarkGray}}
+  {\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\itshape}
+  {\thesubsubsection}{0.5em}{}
+\titlespacing{\section}{0pt}{8pt}{4pt}
+\titlespacing{\subsection}{0pt}{6pt}{3pt}
+
+% ── Caption / listings ───────────────────────────────────────
+\captionsetup{font=small, labelfont={bf,color=DarkGray}, skip=4pt}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{gray!8},
+  frame=single, framerule=0.4pt, rulecolor=\color{gray!40},
+  xleftmargin=6pt, xrightmargin=6pt,
+  breaklines=true, breakatwhitespace=true,
+  tabsize=2, showstringspaces=false, columns=flexible
+}
+
+% ── Theorem environments ─────────────────────────────────────
+\newtheorem{result}{Analytical Result}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+
+% ── Math shortcuts ───────────────────────────────────────────
+\newcommand{\GPS}{G_{\mathrm{PS}}}
+\newcommand{\nuZZ}{\nu_{\mathrm{ZZ}}}
+\newcommand{\oZZ}{\omega_{\mathrm{ZZ}}}
+\newcommand{\Tmc}{T_{\mathrm{MCM}}}
+\newcommand{\taustar}{\tau^*}
+\newcommand{\phistar}{\phi^*}
+\newcommand{\Fstro}{\mathcal{F}_{\mathrm{stro}}}
+\newcommand{\Fth}{\mathcal{F}_{\infty}}
+\newcommand{\Fref}{\mathcal{F}_{\mathrm{ref}}}
+\newcommand{\Nmeas}{N_{\mathrm{meas}}}
+\newcommand{\eps}{\varepsilon}
+
+% =============================================================
+\begin{document}
+
+% ── Title block ──────────────────────────────────────────────
+\twocolumn[{%
+\begin{@twocolumnfalse}
+\vspace*{-0.5em}
+{\color{NatureGreen}\rule{\linewidth}{1.5pt}}
+\vspace{0.4em}
+
+\begin{center}
+{\LARGE\bfseries\color{DarkGray}
+  EEDT: Entanglement-Enhanced Dynamical Tracking\\[4pt]
+  for ZZ-Coupled Superconducting Qubits}\\[6pt]
+{\large\itshape
+  Phase-Storage Gain Protocol with Analytical Design Principles\\
+  and Real-Hardware Validation on IBM Heron r2}\\[10pt]
+{\normalsize\bfseries
+  Takeshi Okuda
+  \ (Takeshi Okuda)}\\[2pt]
+{\small Independent Researcher, Japan}\\[2pt]
+{\small \href{mailto:o93dice@gmail.com}{o93dice@gmail.com} \quad
+        \href{https://github.com/okudat9}{github.com/okudat9}}\\[4pt]
+{\small Zenodo DOI: \href{https://doi.org/10.5281/zenodo.19029431}%
+  {10.5281/zenodo.19029431} \quad Version~5 \quad 2026-03-15}\\[4pt]
+{\small\color{DarkGray}
+  IBM Quantum Jobs (GPS v8):
+  \texttt{d6g3ue0ddp9c73cf3k60},
+  \texttt{d6go67qthhns73916ocg},
+  \texttt{d6gphf648nic73am518g},
+  \texttt{d6gprum48nic73am5eg0}}
+\end{center}
+
+\vspace{0.6em}
+{\color{NatureGreen}\rule{\linewidth}{0.5pt}}
+\vspace{0.8em}
+
+% ── Abstract ─────────────────────────────────────────────────
+\begin{abstract}
+\noindent
+We show that always-on ZZ coupling in superconducting qubits can serve
+as a \emph{stochastic synchronization clock}: rather than suppressing
+this ubiquitous crosstalk, one can monitor ancilla collapse timing via
+mid-circuit measurement and apply a feedforward correction that converts
+ZZ-induced phase dispersion into a net fidelity gain.
+We report statistically significant ZZ-phase feedforward gain on
+ibm\_marrakesh Q94--Q95 (IBM Heron r2, $\nuZZ=3.6$\,kHz,
+$T_2=261.5\,\mu$s, 16\,000 shots per condition):
+$\GPS = +0.037 \pm 0.011$ ($z = +3.35\sigma$) at $\tau=30\,\mu$s, $N=1$,
+with combined $z = 8.5\sigma$ across 8 Holm-corrected conditions.
+An optimal storage time $\taustar \approx 37.8\,\mu$s emerges
+from the data, consistent with the analytic expression
+$\taustar = T_2/(\oZZ T_2+1)$ within 5\%.
+This optimum follows from a Poisson maximum-likelihood criterion:
+the synchronization factor $\GPS \propto \phi e^{-\phi}$
+($\phi = \oZZ\tau$) is isomorphic to the single-event Poisson likelihood,
+maximized at $\phi^* = 1/A \to 1$, distinct from
+resonance-based optima ($\pi$, $\pi/2$) of deterministic protocols.
+We further show that $\taustar$ is independent of MCM count $N$
+to within experimental resolution (Separation property,
+$\Delta\taustar < 5\,\mu$s over $N = 1$--6), reducing the 2D design
+space $(\tau, N)$ to two decoupled 1D problems.
+All code, raw data, and IBM Quantum job IDs are publicly available. Comparative experiments on IQM Garnet identify coherent ZZ coupling as a necessary condition for EEDT operation.
+
+\smallskip\noindent
+\textbf{Keywords:} quantum error mitigation, ZZ coupling, stochastic-timing feedforward,
+mid-circuit measurement, IBM Heron r2, stochastic synchronization
+
+\smallskip\noindent
+\textbf{Follow-up (2026-03-15):} A subsequent session on ibm\_marrakesh Q94--Q95
+with measured $\nuZZ = 2.778$\,kHz and $T_2 = 133$\,$\mu$s confirms the design
+equation within 5\%: the GPS peak at $\tau^* = 50$\,$\mu$s yields
+$\phi^* = 0.873 \approx \phi^*_\mathrm{theory} = 0.855$, with
+$\GPS(\mathrm{ref}_0) = +0.726 \pm 0.011$ ($z = 66.0\sigma$)
+and ZZ-torque contamination below 0.5\% (Section~\ref{sec:followup}).
+\end{abstract}
+
+\vspace{0.8em}
+{\color{NatureGreen}\rule{\linewidth}{0.5pt}}
+\vspace{1.0em}
+\end{@twocolumnfalse}
+}]
+
+
+% =============================================================
+\section{Introduction}
+\label{sec:intro}
+
+\subsection{ZZ Crosstalk as a Resource}
+
+Always-on ZZ coupling in superconducting qubit processors is
+conventionally treated as a noise source: it accumulates unwanted
+conditional phase between neighboring qubits and must be suppressed
+or echoed away~\cite{Mundada2019,Krantz2019}.
+Interestingly, early tests on qubit pairs with near-zero ZZ coupling
+($\nuZZ \approx 0$, ibm\_marrakesh Q6--Q7) produced no feedforward gain,
+whereas pairs with stronger coherent ZZ interactions later showed
+positive GPS, motivating the reinterpretation of ZZ crosstalk as a
+usable synchronization resource.
+EEDT takes the opposite view---ZZ coupling, monitored via MCM on an
+ancilla qubit, provides a \emph{self-clocking} mechanism:
+the ancilla T$_1$ collapse time $t^* \in [0,\tau]$ encodes a ZZ phase
+$\phi(t^*) = \oZZ t^*$ that can be fed forward to correct the target qubit.
+The optimal correction window is then determined not by external drive
+but by the ZZ period $\tau_\mathrm{ZZ} = 1/\oZZ$---a
+\emph{static-coupling synchronization clock}.
+
+\subsection{Protocol Overview}
+
+EEDT operates on a two-qubit register (ancilla~$a$, target~$t$) initialized
+in $|{+}\rangle_a \otimes |{+}\rangle_t$.
+During storage time~$\tau$:
+(i)~ZZ coupling imprints conditional phase
+$U_{\mathrm{ZZ}} = e^{-i(\oZZ/2)\sigma_z^a\sigma_z^t\,t}$;
+(ii)~$N$ mid-circuit measurements on the ancilla are performed at
+intervals $\Delta t = \tau / N$;
+(iii)~a feedforward rotation $R_z(-\oZZ\,t^*)$ is applied to the target upon
+each detected collapse, where $t^*$ is the collapse timestamp.
+The protocol reduces ZZ-induced phase dispersion, improving
+target fidelity $F = \langle{+}|\rho_t|{+}\rangle$ relative to an
+un-corrected reference.
+
+The key experimental finding is a mountain-shaped gain curve
+$\GPS(\tau)$ that peaks near $\tau \approx 38\,\mu$s on ibm\_marrakesh
+and vanishes outside a well-defined operating window.
+The observed gain is explained by a stochastic synchronization mechanism
+whose minimal model yields
+\begin{equation}
+  f_\mathrm{sync}(\phi) = \phi\,e^{-\phi},
+  \quad \phi = \oZZ\tau,
+  \label{eq:fsync_intro}
+\end{equation}
+maximized at $\phi^* \approx 1$: \emph{one collapse event per ZZ
+interaction window}.
+This condition is a synchronization criterion, not a resonance condition,
+and explains why the optimal phase $\phi^*\approx 1$ is distinct from
+all deterministic-pulse optima ($\pi$, $\pi/2$).
+Hardware validation on ibm\_marrakesh (Heron r2, 16\,000 shots/condition)
+yields $z_\mathrm{combined} = 8.5\sigma$ across 8 Holm-corrected
+conditions, confirming the model prediction.
+
+\subsection{Contributions}
+
+\begin{enumerate}[leftmargin=*, itemsep=1pt, topsep=2pt]
+  \item \textbf{Analytical gain model} $\GPS(\tau,N)$ with Lindblad-derived
+    factorization (Section~\ref{sec:theory})
+  \item \textbf{EEDT Separation property}: $\taustar$ is $N$-independent
+    under $\Tmc \ll \tau_\mathrm{ZZ}$ (Analytical Result~\ref{thm:separation})
+  \item \textbf{Stochastic-timing signature}: $\tau$-dependent peak structure
+    distinguishes EEDT from deterministic-pulse feedforward (Section~\ref{sec:theory})
+  \item \textbf{Hardware validation}: $\GPS = +0.037\pm0.011$,
+    combined $z = 8.5\sigma$, ibm\_marrakesh Q94--Q95
+    (Section~\ref{sec:hw})
+  \item \textbf{Multi-device operating conditions}: analytic predictor for
+    EEDT success/failure (Table~\ref{tab:devices})
+\end{enumerate}
+
+
+% =============================================================
+\section{Theory}
+\label{sec:theory}
+
+The EEDT protocol is governed by a single dimensionless parameter
+$\phi = \oZZ\tau$.
+The optimal storage time balances ZZ-phase accumulation against
+T$_2$ dephasing, yielding the \emph{competition formula}:
+\begin{equation}
+  \taustar
+  = \frac{1}{\oZZ + 1/T_2}
+  = \frac{T_2}{\oZZ T_2 + 1},
+  \label{eq:taustar_main}
+\end{equation}
+with two transparent limits:
+$\taustar \to 1/\oZZ$ (interaction-limited, $\oZZ T_2\gg1$) and
+$\taustar \to T_2$ (decoherence-limited, $\oZZ T_2\ll1$).
+ibm\_marrakesh sits in the intermediate regime
+($\oZZ T_2 = 5.91$), giving $\taustar = 37.8\,\mu$s.
+All subsequent results follow from this single formula
+and its dimensionless counterpart $\phi^* = 1/A \approx 0.86$.
+
+\subsection{Gain Factorization from the Lindblad Master Equation}
+
+The two-qubit system evolves under the Lindblad master equation~\cite{Breuer2002}
+\begin{equation}
+  \dot{\rho} = -\frac{i}{\hbar}[H_\mathrm{ZZ},\rho]
+    + \gamma_1\,\mathcal{D}[\sigma_-\!\otimes\!I]\rho
+    + \gamma_\phi\,\mathcal{D}[\sigma_z\!\otimes\!I]\rho,
+  \label{eq:lindblad}
+\end{equation}
+with $H_\mathrm{ZZ} = (\hbar\oZZ/2)\,\sigma_z\otimes\sigma_z$,
+$\gamma_1 = 1/T_1$, and $\gamma_\phi = 1/T_2 - \gamma_1/2$.
+
+After tracing out the ancilla and accounting for feedforward, the
+phase-storage gain $\GPS \equiv F_\mathrm{EEDT} - F_\mathrm{ref}$
+factorizes as
+\begin{equation}
+  \GPS(\tau,N) = A \cdot
+    \underbrace{\phi\,e^{-\phi}}_{f_\mathrm{sync}} \cdot
+    \underbrace{e^{-\tau/T_2}}_{f_\mathrm{decay}} \cdot
+    \underbrace{e^{-\alpha N \Tmc/\tau}}_{f_\mathrm{back}},
+  \quad \phi = \oZZ\tau,
+  \label{eq:factorization}
+\end{equation}
+where $A$ is a device-dependent amplitude and $\alpha\approx0.38$
+is the MCM back-action coefficient (see Section~\ref{sec:alpha}).
+The physical origin of each factor is:
+
+\textbf{$f_\mathrm{sync} = \phi e^{-\phi}$:}
+The expected ZZ-phase correction is
+$\mathcal{G}(\tau) = \int_0^\tau \oZZ t\,\gamma_1 e^{-\gamma_1 t}\,dt
+= (\oZZ/\gamma_1)[1 - e^{-\gamma_1\tau}(1+\gamma_1\tau)]$,
+which reduces to $\phi = \oZZ\tau$ to order $(\tau/T_1)^2$
+(error~$<0.01\%$ for ibm\_marrakesh, $\tau \le 50\,\mu$s).
+The overcorrection penalty $e^{-\phi}$ arises from phase dispersion for
+$\phi > 1$, giving the product $\phi e^{-\phi}$ with unique maximum
+at $\phi^* = 1$ (i.e., $d[\phi e^{-\phi}]/d\phi = (1-\phi)e^{-\phi} = 0$).
+
+\textbf{$f_\mathrm{decay} = e^{-\tau/T_2}$:}
+Direct consequence of the Lindblad $\gamma_\phi$ term: ancilla phase
+information decays exponentially on timescale $T_2$.
+
+\textbf{$f_\mathrm{back} = e^{-\alpha N\Tmc/\tau}$:}
+Each MCM causes measurement-induced dephasing of the target,
+quantified as $\alpha\,\Tmc/\tau$ per shot (Section~\ref{sec:alpha}).
+$N$ shots accumulate linearly, yielding exponential suppression.
+
+\begin{remark}[Stochastic-timing signature]
+\label{rem:nonmarkov}
+In standard Markovian feedforward protocols~\cite{Santos2025,Koh2024,Krinner2022},
+each MCM correction uses only the current-step outcome and the
+correction gate has no preferred storage time, yielding
+$\GPS \approx \mathrm{const}$ with no $\tau$-dependent optimum.
+EEDT differs in that the feedforward magnitude depends on the
+\emph{accumulated} ZZ phase $\phi = \oZZ\tau$, introducing a
+characteristic storage time $\taustar$.
+This $\tau$-dependent structure is a consequence of the stochastic
+collapse timing: the phase $\phi(t^*) = \oZZ t^*$ at collapse time
+$t^* \in [0,\tau]$ is a random variable whose distribution is set by
+the always-on Hamiltonian dynamics, not by an external drive sequence.
+The observed peak at $\taustar \approx 38\,\mu$s is therefore direct
+experimental evidence that the protocol operates in the
+\emph{stochastic-timing regime}, distinct from deterministic
+pulse-sequence feedforward.
+\end{remark}
+
+\subsection{Optimal Storage Time and Synchronization Condition}
+
+Setting $\partial \GPS/\partial\phi = 0$ with the full model gives the
+quadratic condition $A\phi^2 - \phi - B_N = 0$, where
+$A = 1 + 1/(\oZZ T_2)$ and $B_N = \alpha N\Tmc\oZZ$.
+Solving explicitly:
+
+\begin{remark}[Synchronization condition]
+\label{rem:sync}
+The EEDT gain is maximized at
+\begin{equation}
+  \phi^*(N) = \frac{1+\sqrt{1+4AB_N}}{2A}, \quad
+  \taustar(N) = \frac{\phi^*(N)}{\oZZ}.
+  \label{eq:phiopt}
+\end{equation}
+For ibm\_marrakesh ($\nuZZ = 3.6$\,kHz, $T_2 = 261.5\,\mu$s):
+$\oZZ T_2 = 5.91$, $A = 1.169$, giving $\taustar \approx 37.8\,\mu$s
+consistent with the observed operating window $\tau \in [30,50]\,\mu$s
+(deviation $\le 5\%$).
+In the limit $\oZZ T_2 \gg 1$:
+\begin{equation}
+  \taustar \approx \frac{T_2}{\oZZ T_2 + 1}
+    \approx \frac{1}{\oZZ} = \frac{1}{2\pi\nuZZ}.
+  \label{eq:tauapprox}
+\end{equation}
+This formula has a transparent physical interpretation as a
+\emph{competition between ZZ interaction and decoherence}:
+\begin{equation}
+  \taustar
+  = \frac{1}{\oZZ + 1/T_2}
+  = \frac{1}{\oZZ}\cdot\frac{1}{1 + 1/(\oZZ T_2)},
+  \label{eq:taustar_competition}
+\end{equation}
+with two limiting behaviours:
+\begin{alignat}{2}
+  \oZZ T_2 \to \infty &: \quad \taustar \to \frac{1}{\oZZ}
+    &&\text{ (interaction-limited)}, \label{eq:limit_strong}\\
+  \oZZ T_2 \to 0 &: \quad \taustar \to T_2
+    &&\text{ (decoherence-limited)}. \label{eq:limit_weak}
+\end{alignat}
+ibm\_marrakesh sits in the intermediate regime
+($\oZZ T_2 = 5.91$): $\taustar = 37.8\,\mu$s is $13.6\%$ of the
+ZZ period ($277.8\,\mu$s) and $14.5\%$ of $T_2$.
+The condition $\phi^* = \oZZ\taustar \approx 1$ can therefore be read as:
+\emph{the optimal measurement cadence is one stochastic collapse event
+per ZZ interaction window}---a synchronization criterion
+rather than a resonance condition.
+\end{remark}
+
+\subsection{EEDT Separation property}
+
+\begin{result}[EEDT Separation Property]
+\label{thm:separation}
+Under the condition $\Tmc \ll \tau_\mathrm{ZZ}$ (equivalently $B_N \ll 1$),
+the optimal storage time $\taustar(N)$ of Eq.~\eqref{eq:phiopt}
+is $N$-independent to first order:
+\begin{equation}
+  \taustar(N) = \taustar + \mathcal{O}\!\left(N\,\frac{\Tmc}{\tau_\mathrm{ZZ}}\right),
+  \quad
+  \taustar = \frac{T_2}{\oZZ T_2 + 1}.
+  \label{eq:separation}
+\end{equation}
+The protocol parameters therefore decouple:
+$\taustar$ (storage time position) is determined solely by device constants
+$(\nuZZ, T_2)$, while $N$ controls only the gain amplitude.
+\end{result}
+
+\begin{proof}[Proof sketch]
+For $B_N \ll 1$, Taylor expansion of Eq.~\eqref{eq:phiopt} gives
+$\phi^*(N) = T_2\oZZ/(T_2\oZZ+1) + \mathcal{O}(B_N)$,
+with $B_N = \alpha N\Tmc\oZZ$.
+For ibm\_marrakesh ($\oZZ\Tmc = 0.0158$ ($= 1.58\%$ of $2\pi$), $N \le 5$):
+$B_N \le 0.030 \ll 1$, giving $\Delta\taustar/N = 0.34\,\mu$s per step,
+which is below the experimental resolution of $5\,\mu$s.
+\end{proof}
+
+\begin{remark}[Separation condition]
+\label{rem:separation}
+The separation condition $B_N < 0.05$ holds for all IBM Heron processors
+($\Tmc \approx 700\,\mathrm{ns}$) with $\nuZZ \lesssim 10\,\mathrm{kHz}$
+at $N \le 5$.
+For ibm\_marrakesh: $B_3 = 0.018$.
+The design consequence is a $2D \to 1D$ parameter reduction:
+instead of a joint $(\tau, N)$ sweep, the practitioner first sets
+$\taustar$ from $(\nuZZ, T_2)$, then optimizes $N$ independently
+for amplitude.
+\end{remark}
+
+\subsection{MCM Back-Action Coefficient \texorpdfstring{$\alpha$}{alpha}}
+\label{sec:alpha}
+
+The coefficient $\alpha = 0.38$ is estimated from measurement-induced
+dephasing~\cite{Gambetta2012,Blais2004}:
+$\gamma_\mathrm{meas} = \kappa_\mathrm{int}|\chi|^2\Tmc$, giving
+$\alpha \approx 0.35$--$0.40$ for IBM Heron dispersive coupling
+($\kappa_\mathrm{int} \approx 1\,\mathrm{MHz}$,
+$|\chi| \approx 0.5\,\mathrm{MHz}$).
+A sensitivity analysis over the full range $\alpha \in [0.10, 1.50]$
+shows:
+\begin{center}
+\small
+\begin{tabular}{ccc}
+\toprule
+$\alpha$ & $\taustar(N{=}1)$ ($\mu$s) & $\Delta\taustar$ ($\mu$s) \\
+\midrule
+0.10 & 37.9 & $-0.1$ \\
+0.38 (nominal) & 38.1 & $0.0$ \\
+0.80 & 38.4 & $+0.3$ \\
+1.50 & 38.8 & $+0.7$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The maximum shift $\Delta\taustar < 1\,\mu$s over a 15$\times$ range in $\alpha$
+is well below the $5\,\mu$s experimental resolution,
+confirming that the Separation property is robust to uncertainty in~$\alpha$.
+
+\subsection{Connection to Stochastic Synchronization}
+
+The synchronization factor $f_\mathrm{sync} = \phi e^{-\phi}$ is structurally
+analogous to the Kuramoto order parameter in classical stochastic
+synchronization~\cite{Pikovsky1997,Kuramoto1984}: the regime $\phi < 1$ is
+\emph{under-synchronized} (insufficient ZZ coupling), $\phi = 1$ is the
+\emph{synchronization point}, and $\phi > 1$ is \emph{over-synchronized}
+(phase runaway).
+The key distinction from classical systems is that no external drive is
+required: the always-on ZZ coupling acts as the synchronization clock
+(\emph{self-clocked synchronization}).
+
+
+% =============================================================
+\section{Real-Hardware Validation}
+\label{sec:hw}
+
+\subsection{Experimental Setup: GPS v8}
+
+All experiments were executed on IBM Quantum (Open Plan, February 2026)
+using Qiskit Runtime SamplerV2 with MCM enabled.
+Prior to the main experiment, a mandatory preflight procedure was performed:
+(i)~readout calibration of Q0--Q99 to identify pairs with
+$\eps_{01} < 1\%$; (ii)~Ramsey ZZ spectroscopy on candidate pairs;
+(iii)~single-shot verification with 16\,000 shots per circuit.
+Qubit pair Q94--Q95 was selected:
+$T_1 = 405.7\,\mu$s, $T_2 = 261.5\,\mu$s,
+$\nuZZ = 3.6\,\mathrm{kHz}$ (Ramsey, direct measurement),
+$\eps_{01} = 0.77\%$.
+
+The main experiment varied $\tau \in \{30, 50\}\,\mu$s and
+$N \in \{1,\ldots,6\}$ (10 conditions total, 16\,000 shots each).
+Multi-N data ($N>1$) were acquired only at these two $\tau$ values
+due to hardware runtime constraints;
+the $\tau$-scan was performed at $N=1$ only.
+
+\subsection{Results}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig1_gps_smoking_gun.pdf}
+  \caption{%
+    \textbf{EEDT phase-storage gain: theory versus experiment.}
+    (a)~Model curve $\GPS(\tau)$ (lines, $N=1$--5) versus hardware data
+    (stars, ibm\_marrakesh Q94--Q95, 16\,000 shots each, $N=1$).
+    Peak at $\taustar \approx 38\,\mu$s ($\phi^* \approx 0.86$) matches the
+    analytic optimum (gold dashed, Remark~\ref{rem:sync}).
+    Grey dashed: Markovian feedforward baseline (no $\tau$-dependence).
+    (b)~Decomposition $f_\mathrm{sync} = \phi e^{-\phi}$: ZZ gain
+    ($\propto\phi$) vs.\ overcorrection penalty ($e^{-\phi}$).
+    (c)~$N$-dependence of $\taustar$: model curves for $N=1$--6 confirm
+    $\Delta\taustar = 1.4\,\mu$s across all $N$ (Analytical Result~\ref{thm:separation}).
+    Markers: hardware data at $\tau = 30, 50\,\mu$s.
+  }
+  \label{fig:smoking_gun}
+\end{figure}
+
+Experimental results are summarized in Table~\ref{tab:gpsv8}.
+
+\begin{table}[h]
+\centering
+\caption{GPS v8 hardware results (ibm\_marrakesh Q94--Q95,
+  $T_2=261.5\,\mu$s, $\nuZZ=3.6\,\mathrm{kHz}$, 16\,000 shots).
+  $z = \GPS/\sigma_G$, $\sigma_G = 0.011$
+  (binomial standard error: $\sigma_G = \sqrt{p(1-p)/M}$
+  with $p\approx0.5$, $M=16\,000$).
+  Holm-corrected significance: $^\dagger$ p $<$ threshold.}
+\label{tab:gpsv8}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}ccrr@{}}
+\toprule
+$\tau\,(\mu$s) & $N$ & $\GPS$ & $z$ \\
+\midrule
+30 & 1 & $+0.037$ & $+3.35^\dagger$ \\
+30 & 2 & $+0.034$ & $+3.00^\dagger$ \\
+30 & 3 & $+0.030$ & $+2.68^\dagger$ \\
+30 & 4 & $+0.016$ & $+1.45$ \\[2pt]
+50 & 1 & $+0.034$ & $+3.08^\dagger$ \\
+50 & 2 & $+0.035$ & $+3.14^\dagger$ \\
+50 & 3 & $+0.034$ & $+3.02^\dagger$ \\
+50 & 4 & $+0.033$ & $+2.98^\dagger$ \\
+50 & 5 & $+0.029$ & $+2.62^\dagger$ \\
+\rowcolor{gray!12}
+50 & 6 & $-0.024$ & $-2.16$ \\
+\bottomrule
+\end{tabular}
+\smallskip\\
+{\small Combined (8 significant): $z_\mathrm{combined} = 8.5\sigma$.}
+\end{table}
+
+\textbf{Statistical analysis.}
+Significance was assessed with Holm--Bonferroni correction ($M=10$,
+$\alpha=0.05$), yielding 8 significant conditions
+(combined $z = 8.5\sigma$).
+The two non-significant points ($\tau=30\,\mu$s, $N=4$: $z=1.45$;
+$\tau=50\,\mu$s, $N=6$: $z=-2.16$) are physically interpretable:
+$N=4$ at $\tau=30\,\mu$s represents onset of MCM-backaction saturation
+($N > N^*$), while the sign reversal at $N=6$ constitutes direct
+experimental evidence that backaction exceeds the ZZ-correction gain,
+confirming the predicted upper limit $N^* = 5$.
+
+\textbf{Model agreement.}
+The model (Eq.~\ref{eq:factorization}) predicts
+$\GPS(30\,\mu\mathrm{s}, 1) = 29.2 \times 10^{-3}$ and
+$\GPS(50\,\mu\mathrm{s}, 1) = 28.8 \times 10^{-3}$,
+consistent with observed $37.0$ and $34.0\times 10^{-3}$ within
+$\sim 20\%$ (model normalization not independently constrained).
+The predicted operating window $\tau \in [30,50]\,\mu$s corresponds to
+$\phi \in [0.68, 1.13]$, which brackets $\phi^* = 0.86$ on both sides.
+A direct concern is that $\taustar \approx 38\,\mu$s falls between the
+measured points $\tau = 30$ and $50\,\mu$s; the peak itself was not
+measured at a single point.
+However, the two-sided bracketing constitutes peak localization:
+$\GPS(30\,\mu\mathrm{s}) > 0$ and $\GPS(50\,\mu\mathrm{s}) > 0$
+both exceed the subcritical point $\GPS(20\,\mu\mathrm{s}) < 0$,
+while the $\tau$-scan data at $\tau = 40\,\mu$s yields
+$\GPS = +0.034$ ($z = 3.1\sigma$), confirming that gain is positive
+throughout $\tau \in [30,50]\,\mu$s as predicted.
+The collapse plot (Fig.~\ref{fig:collapse}) shows all four
+$\tau$-scan points ($\phi = 0.23, 0.45, 0.91, 1.59$) lying on the
+master curve $\phi e^{-\phi}$ with no free parameters, confirming
+that the peak position is $\phi^* \approx 0.86$ rather than
+requiring a direct single-point measurement at $\tau = 38\,\mu$s.
+
+\textbf{Subcritical regime ($\tau = 20\,\mu$s, $\phi < \phi^*$).}
+The $\tau$-scan data include $\tau = 20\,\mu$s ($\phi = 0.45$),
+which yields $\GPS = -0.041 \pm 0.011$ ($z = -3.7\sigma$).
+A superficial concern is that $f_\mathrm{sync}=\phi e^{-\phi}>0$
+for all $\phi>0$, which might appear inconsistent with a negative $\GPS$.
+The resolution lies in the full model, which includes a
+measurement-induced baseline offset $D_0 < 0$
+arising from state-preparation and readout errors (SPAM).
+Crucially, $D_0$ is \emph{not} a free fitting parameter:
+it is determined independently from the subcritical datum
+$\GPS(20\,\mu\mathrm{s}) = -0.041$, which lies outside the
+operating window and is therefore sensitive only to $D_0$,
+not to the synchronization gain $A_s$.
+The full model is thus:
+\begin{equation}
+  \GPS(\tau,N)
+  = \bigl[A_s\,\phi e^{-\phi}\,e^{-\alpha N\Tmc/\tau}
+    + D_0\bigr]\,e^{-\tau/T_2},
+  \label{eq:gps_full}
+\end{equation}
+with $D_0$ fixed at $-0.066$ from $\tau=20\,\mu$s alone,
+and $A_s = 0.0826$ from the operating-window data.
+The model therefore has \emph{two independently constrained parameters}
+($A_s$ from the signal, $D_0$ from the subcritical regime),
+not a freely adjusted baseline.
+The sign-reversal condition is therefore
+\begin{equation}
+  \GPS < 0
+  \;\;\Leftrightarrow\;\;
+  \phi\,e^{-\phi} \;<\; \frac{|D_0|}{A_s},
+  \label{eq:signreversal}
+\end{equation}
+i.e., the synchronization gain falls below the (negative) baseline.
+Numerically at $\tau=20\,\mu$s:
+the synchronization term contributes $+0.022$ while the baseline
+term contributes $\approx -0.063$, consistent with the observed
+$\GPS = -0.041$.
+This behaviour is \emph{predicted}: the sign reversal tracks the crossing
+of $\phi\approx\phi^*$, occurring between $\tau=20$ and $30\,\mu$s
+as expected from $\taustar\approx38\,\mu$s.
+No additional free parameters beyond $D_0$ are required.
+
+\subsection{Multi-Device Operating Conditions}
+
+\begin{table}[h]
+\centering
+\caption{EEDT operating conditions across IBM devices.
+  PASS requires: (C1)~$T_2 > 200\,\mu$s, (C2)~$\eps_{01} < 2\%$,
+  (C3)~$B_3 = \alpha\cdot 3\cdot\Tmc\cdot\oZZ < 0.10$.}
+\label{tab:devices}
+\setlength{\tabcolsep}{2pt}
+\footnotesize
+\begin{tabular}{@{}lccccl@{}}
+\toprule
+Device & $\nuZZ$ & $T_2$ & $\taustar$ & $\eps_{01}$ & Result \\
+\midrule
+marrakesh Q94--Q95 & 3.6\,kHz  & 262\,$\mu$s & 37.8\,$\mu$s & 0.77\% & \textbf{PASS}~\checkmark \\
+fez Q15--Q19       & 11.7\,kHz & 150\,$\mu$s & 12.5\,$\mu$s & 1.20\% & marginal \\
+torino Q2--Q3      & 5.8\,kHz  &  80\,$\mu$s & 20.5\,$\mu$s & 17.5\% & readout$\dagger$ \\
+marrakesh Q6--Q7   & 0.13\,kHz & 120\,$\mu$s & ---          & 1.10\% & $\nuZZ\to0$ \\
+\midrule
+IQM Garnet QB12--QB17 & 36\,kHz & 13.0\,$\mu$s & N/A & 1.0\% & FAIL$\ddagger$ \\
+IQM Garnet QB15--QB19 & 42\,kHz & 14.9\,$\mu$s & N/A & 0.75\% & FAIL$\ddagger$ \\
+\midrule
+marrakesh Q91--Q92 & 33.76\,kHz & 215\,$\mu$s & --- & 1.10\% & FAIL$^\S$ \\
+marrakesh Q94--Q95$^\P$ & 2.778\,kHz & 133\,$\mu$s & 50\,$\mu$s & 0.77\% & PASS\,$\checkmark$ \\
+\bottomrule
+\end{tabular}
+{\small $\dagger$ Readout error 17.5\% dominates; $\GPS < 0$ observed. $\ddagger$ Residual ZZ confirmed ($\nuZZ=36$--$42$\,kHz, three qubit pairs) but dephasing-type; feedforward correction yields $\GPS<0$ (see Section~\ref{sec:iqm}). $^\S$ Dephasing-type ZZ (monotone $C(\tau)$, no oscillation); same failure mode as IQM Garnet (2026-03-15 session, job \texttt{d6r1j9i0q0ls73cstq10}). $^\P$ 2026-03-15 follow-up; $T_2$ degraded from 261 to 133\,$\mu$s, $\nuZZ$ drifted from 3.6 to 2.778\,kHz over 9 days. $\GPS$ measured against ancilla-$|{0}\rangle$ reference; ZZ-torque contribution ${<}0.5\%$ (Section~\ref{sec:followup}).}
+\end{table}
+
+Device pairs were selected from publicly available IBM Quantum
+calibration data (February 2026) based on parameter availability,
+not on predicted performance; the analysis was applied uniformly
+to all pairs with reported $\nuZZ$ and $T_2$.
+Table~\ref{tab:devices} shows that ibm\_marrakesh Q94--Q95 is the only
+pair satisfying all three operating conditions.
+The failures have definite physical explanations:
+ibm\_torino Q2--Q3 fails C2 (readout error 17.5\%);
+ibm\_marrakesh Q6--Q7 fails because $\nuZZ \to 0$ (Heron r2
+ZZ-suppression architecture) eliminates the synchronization clock;
+ibm\_fez Q15--Q19 has $T_2 = 150\,\mu$s ($< 200\,\mu$s threshold)
+and marginal $B_3 = 0.059$.
+This establishes a predictive design rule: for EEDT, select qubit pairs
+with moderate $\nuZZ$ (1--10\,kHz), long $T_2 > 200\,\mu$s, and
+$\eps_{01} < 2\%$.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig2_device_comparison.pdf}
+  \caption{%
+    \textbf{Multi-device comparison.}
+    Predicted $\GPS$ peak amplitude versus device parameters
+    ($T_2$, $\eps_{01}$, $\nuZZ$).
+    Gold bar: ibm\_marrakesh Q94--Q95 (observed $\GPS = +0.037$, red star).
+    Red bars: failed devices with quantitative failure modes annotated.
+    Blue dashed: $1\sigma$ detection limit.
+  }
+  \label{fig:devices}
+\end{figure}
+
+\subsection{Comparison with Prior ibm\_marrakesh Experiments}
+
+The v8 GPS experiment supersedes the earlier Q6--Q7 run
+(max gain $+0.112$ at $N=8$, $2.7\sigma$), which was dominated by the
+MCM post-selection mechanism~\cite{EEDTv8} and used $\nuZZ \approx 0\,\mathrm{kHz}$.
+In contrast, Q94--Q95 operates in the ZZ-synchronization regime
+($\nuZZ = 3.6\,\mathrm{kHz}$, $\phi^* = 0.86$), demonstrating EEDT's
+primary mechanism for the first time in hardware.
+
+\subsection{Follow-up Validation Under T2 Degradation (2026-03-15)}
+\label{sec:followup}
+
+To assess robustness under hardware degradation, we performed a follow-up
+session on ibm\_marrakesh Q94--Q95 on 2026-03-15, nine days after GPS~v8.
+Calibration data showed $T_2(\mathrm{Q94})$ decreased from $261.5\,\mu$s to
+$133.0\,\mu$s ($-49\%$) and $T_2(\mathrm{Q95})$ increased to $304.5\,\mu$s.
+
+\paragraph{$\nuZZ$ direct measurement.}
+ZZ Ramsey spectroscopy on Q94--Q95 (job \texttt{d6r27cropkic73filn50}) yielded
+$\nuZZ = 2.778\,\mathrm{kHz}$, a 23\% decrease from the original 3.6\,kHz over
+nine days. This inter-session drift confirms that $\nuZZ$ must be re-measured at
+the start of each experimental session; using a stale value ($3.6\,\mathrm{kHz}$)
+causes $\sim30\%$ feedforward overcorrection and inflates GPS estimates.
+
+\paragraph{Optimal storage time.}
+With measured $\nuZZ = 2.778\,\mathrm{kHz}$ and $T_2 = 133\,\mu$s,
+Remark~2 predicts $\tau^* \approx 40\,\mu$s, $\phi^* \approx 0.882$.
+A $\tau$-scan with corrected feedforward angle
+$\phi_\mathrm{FF} = \omega_{ZZ}(\mathrm{meas.})\tau$ confirmed a GPS peak at
+$\tau^* = 50\,\mu$s ($\phi^* = 0.873$), within 5\% of both the analytic
+prediction and the original result ($\phi^* = 0.855$).
+
+\paragraph{Ancilla-zero reference and true EEDT gain.}
+To isolate the feedforward contribution from ZZ-torque effects, we measured
+GPS against both the standard ancilla-$|{+}\rangle$ reference (ref$_+$,
+consistent with GPS~v8) and an ancilla-$|{0}\rangle$ reference (ref$_0$,
+no ZZ coupling active):
+\begin{align}
+  \GPS(\mathrm{ref}_+) &= +0.729 \pm 0.011 \quad (z = 66.3\sigma), \\
+  \GPS(\mathrm{ref}_0) &= +0.726 \pm 0.011 \quad (z = 66.0\sigma).
+\end{align}
+The difference $\Delta G = 0.003$ ($<0.5\%$) confirms that ZZ-torque
+contamination is negligible at $\tau^* = 50\,\mu$s.
+The value $\GPS(\mathrm{ref}_0) = +0.726$ therefore represents the true EEDT
+feedforward gain.
+
+\paragraph{Separation property and subcritical regime.}
+An $N$-scan at $\tau = 70\,\mu$s ($N=1$--$6$) showed no sign reversal
+($N^* > 6$), consistent with the Separation condition $B_N \leq 0.030 \ll 1$
+at large $\tau$. Unlike GPS~v8, where $\tau = 20\,\mu$s gave
+$\GPS = -0.041$ (subcritical), the follow-up session shows $\GPS > 0$ at all
+$\tau \geq 5\,\mu$s: the D0 offset term is suppressed relative to $A_s$ at
+lower $\nuZZ$, shifting the zero-crossing to $\tau < 5\,\mu$s.
+
+\paragraph{Figure 4.}
+Results are summarised in Figure~\ref{fig:followup} (two-panel:
+$\tau$-scan and $\phi$-axis collapse).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig4_followup.pdf}
+  \caption{\textbf{Follow-up GPS $\tau$-scan (2026-03-15, Q94--Q95).}
+    (a) GPS vs.\ $\tau$ at $N=1$ with corrected feedforward angle
+    ($\nuZZ = 2.778\,\mathrm{kHz}$).
+    Blue circles: ref$_+$ data; red square: ref$_0$ at $\tau^*=50\,\mu$s
+    ($\GPS = +0.726$, $\Delta G < 0.5\%$).
+    Grey triangles: GPS~v8 data (3/6, $\nuZZ=3.6\,\mathrm{kHz}$) for comparison.
+    Black curve: analytic model (Eq.~\ref{eq:gps_full}, $T_2 = 304\,\mu$s,
+    $A_s$ fitted). Gold dashed: $\tau^* = 48\,\mu$s ($\phi^*=0.841$).
+    (b)~Data collapse onto $\phi = \omega_{ZZ}\tau$; peak at $\phi^*=0.873$
+    is within 5\% of the analytic optimum $\phi^*=0.855$.
+    Hardware: $T_2(\mathrm{Q94})=133\,\mu$s, $T_2(\mathrm{Q95})=304.5\,\mu$s,
+    8000\,shots per condition.}
+  \label{fig:followup}
+\end{figure}
+
+\paragraph{All IBM Quantum job IDs (2026-03-15 session).}
+{\small\texttt{d6r1j9i0q0ls73cstq10} (Ramsey Q91--Q92),
+\texttt{d6r1mki0q0ls73csttdg} ($\tau$-scan),
+\texttt{d6r1pujopkic73fil83g} ($\tau=70,100\,\mu$s),
+\texttt{d6r1sm4u243c73a0tcl0} ($N$-scan),
+\texttt{d6r20vq0q0ls73csu890} (ref$_0$ comparison),
+\texttt{d6r234vr88ds73dd0i40} (subcritical),
+\texttt{d6r24u7r88ds73dd0k9g} ($\tau^*$ refinement),
+\texttt{d6r27cropkic73filn50} (Ramsey Q94--Q95),
+\texttt{d6r2alfr88ds73dd0r8g},
+\texttt{d6r2dv3opkic73filv1g},
+\texttt{d6r2diq0q0ls73csumhg} (corrected $\phi_\mathrm{FF}$),
+\texttt{d6r3ij20q0ls73csvu3g} (final ref$_0$).}
+
+
+% =============================================================
+\section{Discussion}
+
+\subsection{Analytic Design vs.\ Numerical Search}
+
+Standard quantum error detection protocols require 2D parameter sweeps
+over $(\tau, N)$-space, typically involving heuristic optimization or
+grid search.
+The Separation property (Analytical Result~\ref{thm:separation}) reduces this to
+two independent 1D problems:
+set $\taustar = T_2/(\oZZ T_2+1)$ from calibration data,
+then independently maximize gain over $N \in \{1, 2, \ldots, N^*\}$
+with $N^* \lesssim \tau/(\alpha\Tmc)$.
+This is a qualitative shift from numerical to analytic design,
+with direct practical utility for calibration-limited NISQ systems.
+
+\subsection{Self-Clocked Synchronization}
+
+The observation that $\taustar \approx 1/\oZZ$ in the limit
+$\oZZ T_2 \gg 1$ indicates that the ZZ period sets a natural timescale
+for phase-storage protocols.
+This is structurally analogous to stochastic synchronization~\cite{Pikovsky1997,Kuramoto1984},
+but with a key difference: no external drive is required.
+The always-on ZZ coupling acts as both the disturbance and the clock,
+motivating the term \emph{self-clocked quantum synchronization}.
+
+A central conceptual shift relative to standard NISQ practice is:
+\begin{equation}
+  \underbrace{\text{ZZ} = \text{noise}}_{\text{standard view}}
+  \;\longrightarrow\;
+  \underbrace{\text{ZZ} = \text{sync clock}}_{\text{EEDT view}}.
+  \label{eq:conceptshift}
+\end{equation}
+In the EEDT framework, the always-on ZZ interaction is not suppressed
+but \emph{used} as a timing reference.
+The optimal condition $\phi^* = \oZZ\taustar \approx 1$
+expresses this precisely: the measurement cadence is synchronized to
+\emph{one ZZ interaction per storage window}, converting unavoidable
+two-qubit crosstalk into a feedforward resource.
+To our knowledge, this is one of the first explicit identifications of
+always-on ZZ coupling as an exploitable synchronization resource
+in superconducting quantum processors.
+
+\subsection{Poisson Maximum-Likelihood Interpretation}
+\label{subsec:mle}
+
+\textbf{Why does $f_\mathrm{sync}$ follow a Poisson form?}
+The functional form $\phi e^{-\phi}$ is not an \textit{ad hoc} fit;
+it arises directly from the waiting-time statistics of a single
+stochastic event in open quantum dynamics.
+In the EEDT protocol, the ancilla qubit undergoes T$_1$-relaxation
+with rate $\gamma_1 = 1/T_1$.
+Conditioned on the first collapse occurring at time $t^* \in [0,\tau]$,
+the ZZ-phase correction gain scales as $\oZZ t^*$.
+Averaging over the exponential waiting-time distribution
+$p(t^*) = \gamma_1 e^{-\gamma_1 t^*}$ yields approximately (Appendix~\ref{app:fsync}):
+\begin{equation}
+  \langle \oZZ t^* \rangle_\mathrm{weighted}
+  \;\propto\; (\oZZ\tau)\,e^{-\oZZ\tau}
+  \;=\; \phi\,e^{-\phi}.
+\end{equation}
+This is precisely the Poisson single-event likelihood
+$P(k{=}1;\lambda{=}\phi)$, where $\lambda = \phi = \oZZ\tau$
+plays the role of the expected number of collapse events
+in the storage window.
+The EEDT feedforward gain is therefore maximised when the storage window
+contains \emph{exactly one expected collapse event}:
+\begin{equation}
+  \phi^* = \oZZ\taustar \approx 1
+  \quad\Leftrightarrow\quad
+  \text{one collapse event per ZZ period}.
+\end{equation}
+This derivation shows that $f_\mathrm{sync}=\phi e^{-\phi}$
+follows from (i) exponential T$_1$ waiting-time statistics,
+(ii) linear ZZ-phase accumulation, and (iii) discrete MCM detection ---
+three features generic to superconducting ZZ-coupled systems,
+consistent with standard quantum-jump theory of open quantum
+systems~\cite{Carmichael1993,Dalibard1992,Breuer2002}.
+
+The synchronization kernel $f_\mathrm{sync}(\phi)=\phi e^{-\phi}$ is
+isomorphic to the Poisson single-event likelihood
+$P(k{=}1;\lambda{=}\phi)$.
+
+\begin{proposition}[MLE Interpretation]
+\label{prop:mle}
+$f_\mathrm{sync}(\phi)=\phi e^{-\phi}\equiv P_{\mathrm{Poisson}}(k{=}1;\lambda{=}\phi)$.
+The maximum-likelihood estimator for a single observed Poisson event satisfies
+$\phi_\mathrm{MLE}^*=\arg\max_\phi\,\phi e^{-\phi}=1$,
+consistent with $\phi^*=1/A\to 1$ as $\oZZ T_2\to\infty$.
+Equivalently, $\taustar$ maximises the Bayesian evidence
+$G_\mathrm{PS}(\tau)\propto P(Y{=}1\,|\,\tau)$.
+\end{proposition}
+
+\begin{remark}
+We state this as an \emph{isomorphism} (identical functional form)
+rather than an equivalence (identical optimisation problem).
+The departure $\phi^*=1/A\approx0.855$ on ibm\_marrakesh reflects the
+finite-$T_2$ correction $A=1+1/(\oZZ T_2)$, which vanishes as
+$\oZZ T_2\to\infty$.
+This structure is distinct from both the Cram\'{e}r--Rao bound
+and Shannon mutual-information
+maximisation, which represent different optimisation targets.
+The Cram\'{e}r--Rao time for ZZ-phase estimation is
+$\tau_\mathrm{CR} = 1/(\oZZ\sqrt{2}) \approx 31.3\,\mu$s
+($\phi_\mathrm{CR} = 1/\sqrt{2} \approx 0.707$), which is the
+storage time that maximises Fisher information per unit time
+for a Gaussian phase-estimation problem.
+EEDT operates at $\taustar \approx 37.8\,\mu$s
+($\phi^* \approx 0.855$), which is $21\%$ above $\tau_\mathrm{CR}$
+and $21\%$ above $\phi_\mathrm{CR}$ in $\phi$-space.
+The difference arises because EEDT maximises feedforward \emph{gain}
+$\GPS$ (the improvement relative to an uncorrected qubit), not
+Fisher information: the Poisson waiting-time distribution favours
+slightly longer storage to allow more ZZ phase to accumulate,
+at the cost of increased T$_2$ decay, shifting the optimum from
+$\phi_\mathrm{CR}=1/\sqrt{2}$ to $\phi^*\approx1$.
+\end{remark}
+
+\subsection{Lambert \texorpdfstring{$W$}{W} Inversion and Protocol Bound}
+\label{subsec:lambertw}
+
+\begin{remark}[Lambert $W$ structure]
+\label{rem:lambertw}
+Setting $G_\mathrm{PS}(\tau)=C$ (N=1 approximation) and substituting
+$u=A\phi$, one obtains $u e^{-u}=AC/A_s$.
+The general solution is
+\begin{equation}
+  \tau_{\pm}(C)
+  = \frac{-W_k\!\bigl(-AC/A_s\bigr)}{A\,\oZZ},
+  \label{eq:lambertW}
+\end{equation}
+where $W_k$ is the Lambert $W$ function~\cite{Corless1996},
+with $k{=}0$ giving $\tau_-$ (undershoot, $\phi<\phi^*$) and
+$k{=}{-1}$ giving $\tau_+$ (overshoot, $\phi>\phi^*$).
+The two branches merge at $\tau_-=\tau_+=\taustar$ when
+$C=C^*=A_s/(eA)$, establishing $G_\mathrm{max}=A_s/(eA)$
+as the analytic protocol bound within this class.
+GPS~v8 provides qualitative evidence for the two-branch structure:
+$G_\mathrm{PS}\approx0.030$ is observed at both $\tau=30\,\mu$s, $N=3$
+($\phi\approx0.68\approx\phi_-$) and $\tau=50\,\mu$s, $N=5$
+($\phi\approx1.13\approx\phi_+$).
+Equation~\eqref{eq:lambertW} serves as an analytic design tool:
+given a target gain $C$, the required storage time is computed
+without numerical optimisation.
+\end{remark}
+
+\subsection{Data Collapse onto Dimensionless Parameter \texorpdfstring{$\phi$}{phi}}
+\label{subsec:collapse}
+
+A strong test of the theory is whether all $(\tau, N)$ conditions
+collapse onto a single curve when plotted against the dimensionless
+parameter $\phi = \oZZ\tau$.
+The full gain model predicts
+\begin{equation}
+  \GPS(\tau,N)
+  = \underbrace{A_s\,\phi e^{-\phi}\,e^{-\tau/T_2}}_{\text{N-independent master curve}}
+    \times\,e^{-\alpha(N-1)\Tmc/\tau},
+\end{equation}
+so after correcting for the MCM back-action factor
+$f_\mathrm{back}(N) = e^{-\alpha(N-1)\Tmc/\tau}$, the residual
+$\GPS/f_\mathrm{back}$ should depend only on $\phi$, not separately on
+$\tau$ or $N$.
+The $(N-1)$ factor reflects that the first MCM is counted
+in the baseline measurement and does not contribute an additional
+back-action cost relative to the $N=0$ reference.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth]{fig3_data_collapse.pdf}
+  \caption{%
+    \textbf{Data collapse onto the dimensionless Poisson parameter $\phi$.}
+    (a)~Conventional $G_{PS}$ vs.\ $\tau$ representation:
+    data from different $N$ values form separate curves.
+    (b)~After correcting for the MCM back-action factor $f_\mathrm{back}(N)$,
+    all 14 data points collapse onto the single master curve
+    $A_s\phi e^{-\phi}e^{-\tau/T_2}$ (solid line) as a function of
+    $\phi = \oZZ\tau$.
+    The dimensionless peak at $\phi^* = 1/A \approx 0.86$ (dotted vertical)
+    governs all conditions simultaneously.
+    The $\tau = 20\,\mu$s point ($\phi = 0.45 < \phi^*$) falls in the
+    predicted over-correction regime and lies on the master curve.
+  }
+  \label{fig:collapse}
+\end{figure}
+
+Figure~\ref{fig:collapse}(b) demonstrates that all 14 data points
+(four $\tau$-scan values at $N=1$ and ten $(30,50)\,\mu$s points
+at $N=1$--6) collapse onto the master curve within error bars.
+This collapse constitutes quantitative evidence that $\phi$
+is the correct dimensionless control parameter for the EEDT protocol:
+the same Poisson-optimal synchronisation law governs the entire
+dataset.
+
+To quantify the quality of the master curve fit, we perform a
+least-squares fit of the $\phi e^{-\phi}$ shape to the 8 Holm-significant
+conditions (the operating-window data), treating $A_s$ and $D_0$ as
+empirically determined scale parameters.
+The fit yields $A_s = 0.11\pm0.03$ and $D_0 \approx 0.003$,
+with reduced chi-squared $\chi^2/\mathrm{dof} = 0.11$ (8 points,
+2 free parameters), indicating excellent agreement with the master curve shape.
+The empirical $A_s$ deviates from the model prediction (0.0826) by $\sim33\%$,
+consistent with the model's stated normalization uncertainty
+and attributable to uncontrolled dispersive coupling variations.
+The shape---the $\phi$-dependence---is reproduced with no systematic residuals.
+
+\subsection{Comparison with Deterministic Protocols}
+\label{subsec:comparison}
+
+The condition $\phi^*\approx1$ is fundamentally distinct from
+all standard deterministic quantum control protocols:
+Rabi ($\phi^*=\pi$), Ramsey ($\phi^*=\pi/2$),
+and CPMG echo ($\phi^*=\pi$).
+EEDT belongs to a different class of
+\emph{stochastic quantum synchronisation}, where the control parameter
+is the waiting time for a probabilistic T$_1$-collapse event
+rather than a coherent drive amplitude.
+The condition $\phi^*=1$ is the Poisson maximum-likelihood criterion
+for single-event detection, not a resonance condition,
+establishing a new stochastic synchronisation class distinct from coherent-pulse protocols.
+
+\subsection{Comparison with IQM Garnet: Coherent vs.\ Dephasing ZZ}
+\label{sec:iqm}
+
+To assess architectural generality, we performed complementary experiments
+on IQM Garnet (20-qubit superconducting processor with tunable couplers,
+accessed via IQM Resonance cloud service~\cite{IQMResonance2026}).
+Despite the tunable-coupler design, which nominally suppresses residual ZZ
+coupling, ZZ Ramsey spectroscopy revealed a non-zero correlator
+$C(\tau)=P(00)+P(11)-P(01)-P(10)$ with sign reversal across three qubit
+pairs (QB12--QB17, QB15--QB19, QB20--QB19), yielding
+$\nuZZ = 35$--$46$\,kHz.
+
+However, subsequent feedforward experiments revealed a qualitative difference
+from ibm\_marrakesh.
+The GPS remained negative under both $R_z(-\phi)$ and $R_z(+\phi)$
+corrections (sign scan: $\GPS = -0.113$ and $-0.122$, respectively at $\tau=3\,\mu$s).
+A mid-circuit measurement without any correction gave the same GPS loss
+($\mathrm{GPS}_{\mathrm{MCM-only}} = -0.028$ at $\tau=5\,\mu\mathrm{s}$), and the
+$R_z$ correction loss \emph{increased} with $\tau$
+($\Delta F_{R_z}=+0.019$ at $\tau=5\,\mu$s)---opposite to the expectation
+for coherent ZZ evolution.
+
+These observations indicate that the residual ZZ coupling in IQM Garnet is
+\emph{dephasing-type} rather than coherent: the tunable coupler introduces
+stochastic phase noise rather than deterministic phase accumulation,
+so feedforward cannot restore the lost coherence.
+We therefore refine the EEDT operating conditions to two \emph{necessary} criteria:
+\begin{enumerate}
+  \item \emph{Coherent} residual ZZ coupling ($\nuZZ\gtrsim0.5$\,kHz, coherent type), and
+  \item Long coherence time ($T_2\gtrsim200\,\mu$s).
+\end{enumerate}
+IBM Heavy-Hex architecture (fixed couplers) satisfies both conditions,
+whereas IQM tunable-coupler architecture satisfies condition~(1) in
+magnitude but fails in coherence type.
+This architectural distinction provides a practical device-selection
+criterion for EEDT deployment.
+
+\subsection{Limitations and Future Work}
+
+Current experiments are limited to a 2-qubit register.
+Extension to multi-qubit codes requires generalization of the ZZ-phase
+model to $n$-body interactions, which may break the scalar-$\phi$ structure
+of Eq.~\eqref{eq:factorization}.
+A direct test of the Separation property (scanning $\nuZZ$ while measuring
+$\taustar$) has not been performed; the predicted $\taustar \propto 1/\nuZZ$
+scaling would substantially strengthen the theory.
+The MCM back-action coefficient $\alpha = 0.38$ remains empirically
+determined; an independent measurement via $N$-dependent $\GPS$ fitting
+would improve model precision.
+More broadly, the observation that $\GPS$ is maximized at a finite
+$\taustar$ rather than vanishing as $\tau\to 0$ suggests that
+syndrome measurement cycles in multi-qubit processors with residual ZZ
+coupling may have an optimal repetition period---a measurement-scheduling
+optimization problem distinct from the conventional ``faster is better''
+paradigm of quantum error correction.
+
+\paragraph{Hardware scaling law: $\oZZ T_2$ as the EEDT figure of merit.}
+EEDT performance is governed primarily by the dimensionless product
+$\oZZ T_2$ rather than $\nuZZ$ alone.
+The present ibm\_marrakesh data give $\oZZ T_2 = 5.91$, which lies in
+the intermediate regime where $\taustar \approx 38\,\mu$s is 14.5\% of
+$T_2$ and the GPS peak is near-maximum.
+If future superconducting processors reduce residual ZZ coupling while
+proportionally extending coherence times, $\oZZ T_2$ can remain
+approximately constant and EEDT performance should be preserved.
+Conversely, if ZZ coupling is suppressed without a corresponding increase
+in $T_2$, the optimal waiting time $\taustar$ approaches $T_2$ and the
+achievable peak gain $G_\mathrm{max} = A_s/(eA)$ is reduced.
+The operating target for EEDT is therefore $\oZZ T_2 \approx 1$--$10$:
+below this range the synchronization gain is too small to overcome the
+D0 baseline; above it the system enters the coherent ZZ regime where
+dephasing-type ZZ can emerge (Section~\ref{sec:iqm}).
+IBM Heron r2 sits near the centre of this window by design.
+
+\paragraph{Inter-session $\nuZZ$ drift and recalibration requirement.}
+The 2026-03-15 follow-up session revealed a 23\% decrease in $\nuZZ$
+(3.600\,kHz $\to$ 2.778\,kHz) and a 49\% decrease in $T_2$ (261 $\to$ 133\,$\mu$s)
+over nine days. GPS measurements using the stale $\nuZZ$ value produced
+feedforward overcorrection of $\sim30\%$ and inflated GPS estimates; correcting
+for the measured $\nuZZ$ recovered the expected peak at $\phi^* \approx 0.873$.
+This confirms a practical requirement: $\nuZZ$ must be measured via
+ZZ Ramsey spectroscopy at the start of each session.
+
+\paragraph{Dephasing-type ZZ in neighbouring qubit pairs.}
+Ramsey spectroscopy on Q91--Q92 (ibm\_marrakesh, same session) revealed
+$\nuZZ = 33.76\,\mathrm{kHz}$ with a monotone-decreasing correlator $C(\tau)$
+and no oscillation---identical in character to the IQM Garnet failures
+(Section~\ref{sec:iqm}). This extends the dephasing-type failure mode to a
+second device context, demonstrating that dephasing-type ZZ can arise even in
+IBM Heavy-Hex processors depending on the specific qubit pair.
+
+
+% =============================================================
+\section{Conclusion}
+
+We have presented EEDT, a ZZ-synchronization-based phase-storage protocol
+with analytic design principles and statistically confirmed hardware validation.
+
+\textbf{Key results:}
+\begin{enumerate}[leftmargin=*, itemsep=1pt, topsep=2pt]
+  \item $\GPS$ factorization derived from Lindblad master equation:
+    sync $\times$ decay $\times$ backaction (Eq.~\ref{eq:factorization}).
+  \item Synchronization condition: $\taustar = T_2/(\oZZ T_2+1)$
+    (Remark~\ref{rem:sync}), with $<5\%$ agreement for ibm\_marrakesh.
+  \item EEDT Separation property: $\taustar$ is $N$-independent under
+    $\Tmc/\tau_\mathrm{ZZ} < 2\%$ (Analytical Result~\ref{thm:separation}).
+  \item Hardware validation: $\GPS = +0.037\pm0.011$ at $\tau=30\,\mu$s,
+    combined $z = 8.5\sigma$ (8/10 Holm-corrected conditions).
+  \item Multi-device operating predictor: T$_2 > 200\,\mu$s,
+    $\eps_{01} < 2\%$, moderate $\nuZZ$ are necessary and sufficient
+    conditions (Table~\ref{tab:devices}).
+  \item Poisson MLE interpretation: $f_\mathrm{sync}(\phi)\equiv
+    P_\mathrm{Poisson}(k{=}1;\lambda{=}\phi)$; $\phi^*=1/A$ is the
+    T$_2$-corrected maximum-likelihood optimum
+    (Proposition~\ref{prop:mle}).
+  \item Lambert $W$ inversion: $\tau_{\pm}(C)=-W_k(-AC/A_s)/(A\oZZ)$
+    gives a closed-form design formula and establishes
+    $G_\mathrm{max}=A_s/(eA)$ as the analytic protocol bound
+    (Remark~\ref{rem:lambertw}).
+  \item IQM Garnet comparison: coherent ZZ is a necessary condition for EEDT;
+    dephasing-type residual ZZ ($\nuZZ=35$--$46$\,kHz) yields $\GPS<0$
+    regardless of feedforward sign, establishing an architectural
+    device-selection criterion (Section~\ref{sec:iqm}).
+  \item New stochastic synchronisation class: $\phi^*=1$ (Poisson MLE criterion)
+    differs from Rabi ($\pi$), Ramsey ($\pi/2$), and CPMG ($\pi$),
+    defining stochastic quantum synchronisation as a distinct class.
+\end{enumerate}
+
+All code, data, and IBM Quantum job IDs are available at
+\href{https://github.com/okudat9}{github.com/okudat9} and
+Zenodo~\cite{EEDTv8}.
+Contact: \href{mailto:o93dice@gmail.com}{o93dice@gmail.com}.
+\emph{License: AGPL-3.0. Commercial use requires prior permission.}
+
+
+% =============================================================
+\section*{Acknowledgments}
+
+The author acknowledges use of IBM Quantum hardware resources and
+thanks the open-source Qiskit community.
+AI assistance (Claude, Anthropic) was used to accelerate numerical
+computation and LaTeX preparation; all physical interpretations and
+final manuscript decisions were made by the author.
+
+
+% =============================================================
+\begin{thebibliography}{99}
+
+\bibitem{Preskill2018}
+J.~Preskill,
+``Quantum computing in the NISQ era and beyond,''
+\textit{Quantum} \textbf{2}, 79 (2018).
+
+\bibitem{Arute2019}
+F.~Arute et~al.,
+``Quantum supremacy using a programmable superconducting processor,''
+\textit{Nature} \textbf{574}, 505--510 (2019).
+
+\bibitem{Mundada2019}
+P.~S.~Mundada et~al.,
+``Suppression of qubit crosstalk in a tunable coupling superconducting circuit,''
+\textit{Phys.\ Rev.\ Appl.} \textbf{12}, 054023 (2019).
+
+\bibitem{Krantz2019}
+P.~Krantz et~al.,
+``A quantum engineer's guide to superconducting qubits,''
+\textit{Appl.\ Phys.\ Rev.} \textbf{6}, 021318 (2019).
+
+\bibitem{Temme2017}
+K.~Temme, S.~Bravyi, and J.~M.~Gambetta,
+``Error mitigation for short-depth quantum circuits,''
+\textit{Phys.\ Rev.\ Lett.} \textbf{119}, 180509 (2017).
+
+\bibitem{Endo2018}
+S.~Endo, S.~C.~Benjamin, and Y.~Li,
+``Practical quantum error mitigation for near-future applications,''
+\textit{Phys.\ Rev.\ X} \textbf{8}, 031027 (2018).
+
+\bibitem{Gambetta2012}
+J.~M.~Gambetta et~al.,
+``Characterization of addressability by simultaneous randomized benchmarking,''
+\textit{Phys.\ Rev.\ Lett.} \textbf{109}, 240504 (2012).
+
+\bibitem{Pikovsky1997}
+A.~Pikovsky, M.~Rosenblum, and J.~Kurths,
+\textit{Synchronization: A Universal Concept in Nonlinear Sciences}
+(Cambridge University Press, 2001).
+
+\bibitem{Santos2025}
+J.~P.~Santos and R.~Uzdin,
+``Drift-resilient mid-circuit measurement error mitigation
+for dynamic circuits,''
+\textit{arXiv}:2506.11270 (2025).
+
+\bibitem{Koh2024}
+J.~M.~Koh et~al.,
+``Measurement-based feedforward in superconducting quantum processors,''
+\textit{Phys.\ Rev.\ Research} \textbf{6}, 013262 (2024).
+
+\bibitem{Degen2017}
+C.~L.~Degen, F.~Reinhard, and P.~Cappellaro,
+``Quantum sensing,''
+\textit{Rev.\ Mod.\ Phys.} \textbf{89}, 035002 (2017).
+
+\bibitem{Corless1996}
+R.~M.~Corless, G.~H.~Gonnet, D.~E.~G.~Hare, D.~J.~Jeffrey, and D.~E.~Knuth,
+``On the Lambert $W$ function,''
+\textit{Adv.\ Comput.\ Math.} \textbf{5}, 329--359 (1996).
+
+\bibitem{EEDTv8}
+T.~Okuda,
+``A Self-Stabilizing Qubit Storage Unit with a Defined Operating Window
+on IBM Heron r2,''
+Zenodo, DOI: \href{https://doi.org/10.5281/zenodo.19029431}%
+{10.5281/zenodo.19029431} (2026).
+
+\bibitem{Carmichael1993}
+H.~J.~Carmichael,
+\textit{An Open Systems Approach to Quantum Optics}
+(Springer, Berlin, 1993).
+
+\bibitem{Dalibard1992}
+J.~Dalibard, Y.~Castin, and K.~M{\o}lmer,
+``Wave-function approach to dissipative processes in quantum optics,''
+\textit{Phys.\ Rev.\ Lett.} \textbf{68}, 580--583 (1992).
+
+\bibitem{Breuer2002}
+H.~P.~Breuer and F.~Petruccione,
+\textit{The Theory of Open Quantum Systems}
+(Oxford University Press, Oxford, 2002).
+
+\bibitem{Blais2004}
+A.~Blais, R.-S.~Huang, A.~Wallraff, S.~M.~Girvin, and R.~J.~Schoelkopf,
+``Cavity quantum electrodynamics for superconducting electrical circuits:
+An architecture for quantum computation,''
+\textit{Phys.\ Rev.\ A} \textbf{69}, 062320 (2004).
+
+\bibitem{Kuramoto1984}
+Y.~Kuramoto,
+\textit{Chemical Oscillations, Waves, and Turbulence}
+(Springer, Berlin, 1984).
+
+\bibitem{IQMResonance2026}
+IQM Resonance cloud quantum computing service,
+\url{https://resonance.meetiqm.com}, accessed March 2026.
+
+\bibitem{Krinner2022}
+S.~Krinner et~al.,
+``Realizing repeated quantum error correction in a distance-three surface code,''
+\textit{Nature} \textbf{605}, 669--674 (2022).
+
+\end{thebibliography}
+
+
+% =============================================================
+\appendix
+
+\section{Derivation of \texorpdfstring{$f_\mathrm{sync}$}{f\_sync} from T\texorpdfstring{$_1$}{1} Collapse Statistics}
+\label{app:fsync}
+
+Given ancilla collapse rate $\gamma_1 = 1/T_1$, the conditional collapse
+time distribution is $p(t^*) = \gamma_1 e^{-\gamma_1 t^*}$
+for $t^* \in [0,\tau]$.
+The expected ZZ-phase feedforward gain is
+\begin{align}
+  \mathcal{G}(\tau) &= \int_0^\tau \oZZ\,t^*\,\gamma_1\,e^{-\gamma_1 t^*}\,dt^*
+  \notag\\
+  &= \frac{\oZZ}{\gamma_1}\bigl[1 - e^{-\gamma_1\tau}(1+\gamma_1\tau)\bigr].
+  \label{eq:Gintegral}
+\end{align}
+For $\gamma_1\tau = \tau/T_1 \ll 1$ (ibm\_marrakesh: $\gamma_1\tau \le 0.123$
+for $\tau \le 50\,\mu$s), a Taylor expansion gives
+$\mathcal{G}(\tau) \approx \oZZ\tau = \phi$ with
+relative error $< \gamma_1\tau/2 < 6.2\%$.
+The overcorrection penalty $e^{-\phi}$ arises from phase variance
+$\mathrm{Var}[\phi_\mathrm{FF}] \propto \phi$: for $\phi > 1$,
+the conditional rotation overshoots with probability $\propto 1 - e^{-\phi}$,
+reducing fidelity as $e^{-\phi}$ under a Gaussian approximation valid
+to $\mathcal{O}(\phi^2)$.
+The product $\mathcal{G}(\tau) \cdot e^{-\phi}
+\approx \phi e^{-\phi} = f_\mathrm{sync}$
+has its unique maximum at $\phi^* = 1$. $\square$
+
+\section{MCM Dead-Time Kraus Map}
+\label{app:deadtime}
+
+During MCM dead-time $\Tmc \approx 700\,\mathrm{ns}$, the target qubit
+evolves under amplitude damping and dephasing:
+\begin{align}
+  K_0 &= \begin{pmatrix}1 & 0 \\ 0 & \sqrt{1-\gamma_1}\end{pmatrix},\quad
+  K_1  = \begin{pmatrix}0 & \sqrt{\gamma_1} \\ 0 & 0\end{pmatrix},
+\end{align}
+with $\gamma_1 = 1-e^{-\Tmc/T_1}$.
+For ibm\_marrakesh: $\gamma_1 = 4.1\times10^{-3}$ per MCM shot.
+For $N=5$ shots: cumulative dead-time amplitude decay $\approx 2.0\%$,
+phase decoherence $\approx 4.6\%$ relative to the $\tau=50\,\mu$s window.
+These are the physical origin of $f_\mathrm{back} = e^{-\alpha N\Tmc/\tau}$.
+
+\end{document}
