@@ -2,6 +2,22 @@
 
 **ZZ Coupling as a Stochastic Synchronization Clock for Superconducting Qubits**
 
+## 🚀 Quantum-6502 BIOS（最新版・2026-03-21公開）
+
+**「不安定な量子ビットを安定したストレージとして使えるOS」** が完成しました。
+
+LinkedIn投稿で宣言した通り、これまで「キャリブレーションスクリプト」だったものが**本物の量子OS（BIOS）**になりました。
+
+### 主な進化点
+- **Universal Pair Discovery**（Layer 0） — 任意バックエンド・任意結合ペアから自動で最適ペアを選択（Q94-Q95依存を完全脱却）
+- **QFEED+** — ν_ZZが57倍ドリフトしても位相を0.0000 radに自動補正
+- **Q-Script API** — `qs.run(goal="maximize_fidelity")` だけで全自動実行
+
+ユーザーは**物理パラメータ（ν_ZZ, T2, ω_ZZ·T2）を一切意識しません**。OSがすべて観測・推定・最適化します。
+
+### ディレクトリ
+
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19029431.svg)](https://doi.org/10.5281/zenodo.19029431)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 
