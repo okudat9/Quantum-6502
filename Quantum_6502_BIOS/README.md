@@ -262,4 +262,4 @@ DOI: [10.5281/zenodo.19029431](https://doi.org/10.5281/zenodo.19029431)
 
 ## License
 
-CC BY 4.0 — Free to use, cite, and build upon with attribution.
+AGPL-3.0 — Free to use and build upon. Commercial use requires prior permission from the author.
