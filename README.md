@@ -1,22 +1,21 @@
 # EEDT: Entanglement-Enhanced Dynamical Tracking
-
 **ZZ Coupling as a Stochastic Synchronization Clock for Superconducting Qubits**
 
-## 🚀 Quantum-6502 BIOS（最新版・2026-03-21公開）
+## 🚀 Quantum-6502 BIOS (Latest — released 2026-03-21)
 
-**「不安定な量子ビットを安定したストレージとして使えるOS」** が完成しました。
+**"A quantum OS that turns unstable qubits into reliable storage units."**
 
-LinkedIn投稿で宣言した通り、これまで「キャリブレーションスクリプト」だったものが**本物の量子OS（BIOS）**になりました。
+As announced on LinkedIn, what started as a calibration script has become a genuine quantum OS (BIOS).
 
-### 主な進化点
-- **Universal Pair Discovery**（Layer 0） — 任意バックエンド・任意結合ペアから自動で最適ペアを選択（Q94-Q95依存を完全脱却）
-- **QFEED+** — ν_ZZが57倍ドリフトしても位相を0.0000 radに自動補正
-- **Q-Script API** — `qs.run(goal="maximize_fidelity")` だけで全自動実行
+### Key advances
 
-ユーザーは**物理パラメータ（ν_ZZ, T2, ω_ZZ·T2）を一切意識しません**。OSがすべて観測・推定・最適化します。
+- **Universal Pair Discovery** (Layer 0) — Automatically selects the optimal qubit pair from any backend and any coupling map. No longer tied to Q94-Q95.
+- **QFEED+** — Corrects feedforward phase to 0.0000 rad even when ν_ZZ drifts by 57×.
+- **Q-Script API** — A single call `qs.run(goal="maximize_fidelity")` drives the entire pipeline automatically.
 
-### ディレクトリ
+The user never touches physical parameters (ν_ZZ, T2, ω_ZZ·T2). The OS observes, estimates, and optimizes everything.
 
+### Repository
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19029431.svg)](https://doi.org/10.5281/zenodo.19029431)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
